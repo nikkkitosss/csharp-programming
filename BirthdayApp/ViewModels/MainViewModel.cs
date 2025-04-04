@@ -1,120 +1,128 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using BirthdayApp;
+using BirthdayApp.Models;
 
 namespace BirthdayApp.ViewModels
 {
-    class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : INotifyPropertyChanged
     {
+        private Person _person;
+        private string _firstName;
+        private string _lastName;
+        private string _email;
         private DateTime _birthDate = DateTime.Today;
+        private bool _isButtonEnabled = true;
+        private string _outputFullName;
         private string _ageText;
-        private string _westernZodiac;
-        private string _chineseZodiac;
+        private string _westernSign;
+        private string _chineseSign;
+        private string _outputBirthDate;
+        private string _outputEmail;
+        private string _outputIsAdult;
+
+        public string FirstName
+        {
+            get => _firstName;
+            set { _firstName = value; OnPropertyChanged(nameof(FirstName)); OnPropertyChanged(nameof(CanProceed)); }
+        }
+
+        public string LastName
+        {
+            get => _lastName;
+            set { _lastName = value; OnPropertyChanged(nameof(LastName)); OnPropertyChanged(nameof(CanProceed)); }
+        }
+
+        public string Email
+        {
+            get => _email;
+            set { _email = value; OnPropertyChanged(nameof(Email)); OnPropertyChanged(nameof(CanProceed)); }
+        }
 
         public DateTime BirthDate
         {
             get => _birthDate;
-            set
-            {
-                _birthDate = value;
-                OnPropertyChanged(nameof(BirthDate));
-            }
+            set { _birthDate = value; OnPropertyChanged(nameof(BirthDate)); OnPropertyChanged(nameof(CanProceed)); }
         }
 
-        public string AgeText
+        public bool IsButtonEnabled
         {
-            get => _ageText;
-            private set
-            {
-                _ageText = value;
-                OnPropertyChanged(nameof(AgeText));
-            }
+            get => _isButtonEnabled;
+            private set { _isButtonEnabled = value; OnPropertyChanged(nameof(IsButtonEnabled)); }
         }
 
-        public string WesternZodiac
-        {
-            get => _westernZodiac;
-            private set
-            {
-                _westernZodiac = value;
-                OnPropertyChanged(nameof(WesternZodiac));
-            }
-        }
+        public bool CanProceed =>
+            !string.IsNullOrWhiteSpace(FirstName) &&
+            !string.IsNullOrWhiteSpace(LastName) &&
+            !string.IsNullOrWhiteSpace(Email) &&
+            BirthDate != DateTime.MinValue;
 
-        public string ChineseZodiac
-        {
-            get => _chineseZodiac;
-            private set
-            {
-                _chineseZodiac = value;
-                OnPropertyChanged(nameof(ChineseZodiac));
-            }
-        }
+        public string OutputFullName => _outputFullName;
+        public string AgeText => _ageText;
+        public string WesternSign => _westernSign;
+        public string ChineseSign => _chineseSign;
+        public string OutputBirthDate => _outputBirthDate;
+        public string OutputEmail => _outputEmail;
+        public string OutputIsAdult => _outputIsAdult;
 
-        public ICommand ConfirmDateCommand { get; }
+        public ICommand ProceedCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainViewModel()
         {
-            ConfirmDateCommand = new RelayCommand(ConfirmDate);
+            ProceedCommand = new RelayCommand(async () => await Proceed(), () => CanProceed);
         }
 
-        private void OnPropertyChanged(string propertyName) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        private void ConfirmDate()
+        private async Task Proceed()
         {
-            CalculateAgeAndZodiac();
+            IsButtonEnabled = false;
+            try
+            {
+                _person = new Person(FirstName, LastName, Email, BirthDate);
+                await Task.Run(CalculateAgeAndZodiac);
+                OnPropertyChanged(nameof(OutputFullName));
+                OnPropertyChanged(nameof(AgeText));
+                OnPropertyChanged(nameof(WesternSign));
+                OnPropertyChanged(nameof(ChineseSign));
+                OnPropertyChanged(nameof(OutputBirthDate));
+                OnPropertyChanged(nameof(OutputEmail));
+                OnPropertyChanged(nameof(OutputIsAdult));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsButtonEnabled = true;
+            }
         }
 
         private void CalculateAgeAndZodiac()
         {
-            int age = DateTime.Today.Year - BirthDate.Year;
-            if (BirthDate > DateTime.Today.AddYears(-age)) age--;
-
-            if (age < 0 || age > 135)
+            if (_person.Age < 0 || _person.Age > 135)
             {
                 MessageBox.Show("Невірна дата народження!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
-            if (BirthDate.Day == DateTime.Today.Day && BirthDate.Month == DateTime.Today.Month)
+            if (_person.IsBirthday)
             {
                 MessageBox.Show("Вітаємо з Днем народження!", "Привітання", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-
-            AgeText = $"Вам {age} років.";
-            WesternZodiac = GetWesternZodiac(BirthDate);
-            ChineseZodiac = GetChineseZodiac(BirthDate);
+            _outputFullName = $"Прізвище ім'я: {_person.FullName}";
+            _ageText = $"Вік: {_person.Age}";
+            _westernSign = $"Західний знак зодіаку: {_person.WesternSign}";
+            _chineseSign = $"Китайський знак зодіаку: {_person.ChineseSign}";
+            _outputBirthDate = $"Дата народження: {_person.BirthDate.ToShortDateString()}";
+            _outputEmail = $"Email: {_person.Email}";
+            _outputIsAdult = $"Дорослий: {(_person.IsAdult ? "Так" : "Ні")}";
         }
 
-        private string GetWesternZodiac(DateTime date)
-        {
-            int day = date.Day, month = date.Month;
-            return month switch
-            {
-                1 => (day <= 19) ? "Козеріг" : "Водолій",
-                2 => (day <= 18) ? "Водолій" : "Риби",
-                3 => (day <= 20) ? "Риби" : "Овен",
-                4 => (day <= 19) ? "Овен" : "Телець",
-                5 => (day <= 20) ? "Телець" : "Близнюки",
-                6 => (day <= 20) ? "Близнюки" : "Рак",
-                7 => (day <= 22) ? "Рак" : "Лев",
-                8 => (day <= 22) ? "Лев" : "Діва",
-                9 => (day <= 22) ? "Діва" : "Терези",
-                10 => (day <= 22) ? "Терези" : "Скорпіон",
-                11 => (day <= 21) ? "Скорпіон" : "Стрілець",
-                12 => (day <= 21) ? "Стрілець" : "Козеріг",
-                _ => "Невідомо"
-            };
-        }
-
-        private string GetChineseZodiac(DateTime date)
-        {
-            string[] animals = { "Мавпа", "Півень", "Собака", "Свиня", "Щур", "Бик", "Тигр", "Кролик", "Дракон", "Змія", "Кінь", "Коза" };
-            return animals[date.Year % 12];
-        }
+        private void OnPropertyChanged(string propertyName) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

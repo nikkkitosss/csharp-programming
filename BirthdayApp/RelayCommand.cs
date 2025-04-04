@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace BirthdayApp
+namespace BirthdayApp.ViewModels
 {
     public class RelayCommand : ICommand
     {
@@ -24,7 +20,7 @@ namespace BirthdayApp
             remove => CommandManager.RequerySuggested -= value;
         }
 
-        public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
+        public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
 
         public void Execute(object parameter) => _execute();
     }
