@@ -1,29 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-<<<<<<< Updated upstream
-using System.Windows;
-using System.Windows.Input;
-=======
 using System.Linq;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using BirthdayApp.Models;
 using BirthdayApp.Views;
 using BirthdayApp.Services;
->>>>>>> Stashed changes
 
 namespace BirthdayApp.ViewModels
 {
     class MainViewModel : INotifyPropertyChanged
     {
-<<<<<<< Updated upstream
-        private DateTime _birthDate = DateTime.Today;
-        private string _ageText;
-        private string _westernZodiac;
-        private string _chineseZodiac;
-=======
         public ObservableCollection<User> Users { get; set; }
         public ICollectionView UsersView { get; set; }
 
@@ -63,15 +52,15 @@ namespace BirthdayApp.ViewModels
         public ICommand DeleteCommand { get; }
         public ICommand ClearFilterCommand { get; }
 
-        private void AddUserExecute(object obj)
-        {
-            AddUser();
-        }
->>>>>>> Stashed changes
+        public ICommand ConfirmDateCommand { get; }
 
-        private void EditUserExecute(object obj)
+        private DateTime _birthDate = DateTime.Today;
+        private string _ageText;
+        private string _westernZodiac;
+        private string _chineseZodiac;
+
+        public DateTime BirthDate
         {
-<<<<<<< Updated upstream
             get => _birthDate;
             set
             {
@@ -110,19 +99,23 @@ namespace BirthdayApp.ViewModels
             }
         }
 
-        public ICommand ConfirmDateCommand { get; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public MainViewModel()
         {
+            var loaded = DataService.LoadUsers();
+            var list = loaded ?? GenerateUsers(50);
+            Users = new ObservableCollection<User>(list);
+            UsersView = CollectionViewSource.GetDefaultView(Users);
+            UsersView.Filter = Filter;
+
+            AddCommand = new RelayCommand(AddUserExecute);
+            EditCommand = new RelayCommand(EditUserExecute, CanEditOrDeleteUser);
+            DeleteCommand = new RelayCommand(DeleteUserExecute, CanEditOrDeleteUser);
+            ClearFilterCommand = new RelayCommand(ClearFilterExecute);
+
             ConfirmDateCommand = new RelayCommand(ConfirmDate);
         }
 
-        private void OnPropertyChanged(string propertyName) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        private void ConfirmDate()
+        private void ConfirmDate(object obj)
         {
             CalculateAgeAndZodiac();
         }
@@ -174,7 +167,14 @@ namespace BirthdayApp.ViewModels
             string[] animals = { "Мавпа", "Півень", "Собака", "Свиня", "Щур", "Бик", "Тигр", "Кролик", "Дракон", "Змія", "Кінь", "Коза" };
             return animals[date.Year % 12];
         }
-=======
+
+        private void AddUserExecute(object obj)
+        {
+            AddUser();
+        }
+
+        private void EditUserExecute(object obj)
+        {
             EditUser(obj as User);
         }
 
@@ -193,22 +193,6 @@ namespace BirthdayApp.ViewModels
             FilterText = string.Empty;
             SelectedFilterProperty = null;
         }
-
-
-        public MainViewModel()
-        {
-            var loaded = DataService.LoadUsers();
-            var list = loaded ?? GenerateUsers(50);
-            Users = new ObservableCollection<User>(list);
-            UsersView = CollectionViewSource.GetDefaultView(Users);
-            UsersView.Filter = Filter;
-            
-            AddCommand = new RelayCommand(AddUserExecute);
-            EditCommand = new RelayCommand(EditUserExecute, CanEditOrDeleteUser);
-            DeleteCommand = new RelayCommand(DeleteUserExecute, CanEditOrDeleteUser);
-            ClearFilterCommand = new RelayCommand(ClearFilterExecute);
-        }
-
 
         private bool Filter(object obj)
         {
@@ -229,9 +213,9 @@ namespace BirthdayApp.ViewModels
             }
         }
 
-        private void EditUser(object obj)
+        private void EditUser(User user)
         {
-            if (obj is not User user) return;
+            if (user is null) return;
 
             var dlg = new UserDialog(user);
             if (dlg.ShowDialog() == true)
@@ -246,9 +230,9 @@ namespace BirthdayApp.ViewModels
             }
         }
 
-        private void DeleteUser(object obj)
+        private void DeleteUser(User user)
         {
-            if (obj is not User user) return;
+            if (user is null) return;
             Users.Remove(user);
             DataService.SaveUsers(Users);
         }
@@ -274,6 +258,5 @@ namespace BirthdayApp.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string prop) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
->>>>>>> Stashed changes
     }
 }

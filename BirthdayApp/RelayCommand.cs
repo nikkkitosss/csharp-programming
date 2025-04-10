@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace BirthdayApp
@@ -33,15 +29,5 @@ namespace BirthdayApp
             add => CommandManager.RequerySuggested += value;
             remove => CommandManager.RequerySuggested -= value;
         }
-<<<<<<< Updated upstream
-
-        public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
-
-        public void Execute(object parameter) => _execute();
     }
 }
-=======
-    }
-
-}
->>>>>>> Stashed changes
