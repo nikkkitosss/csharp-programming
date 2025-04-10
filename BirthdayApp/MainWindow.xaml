@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:BirthdayApp.ViewModels"
+        xmlns:views="clr-namespace:BirthdayApp.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-
+        Title="Керування користувачами" Height="600" Width="900">
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
+<<<<<<< Updated upstream
 
     <Grid Margin="20">
         <StackPanel>
@@ -28,3 +29,35 @@
         </StackPanel>
     </Grid>
 </Window>
+=======
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <ComboBox Width="150" ItemsSource="{Binding FilterProperties}" SelectedItem="{Binding SelectedFilterProperty}" />
+            <TextBox Width="200" Margin="5,0,0,0" Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="Очистити" Margin="5,0,0,0" Command="{Binding ClearFilterCommand}" />
+        </StackPanel>
+        <DataGrid x:Name="UsersGrid" Grid.Row="1" ItemsSource="{Binding UsersView}" AutoGenerateColumns="False" CanUserSortColumns="True" IsReadOnly="True" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ім'я" Binding="{Binding FirstName}" SortMemberPath="FirstName" />
+                <DataGridTextColumn Header="Прізвище" Binding="{Binding LastName}" SortMemberPath="LastName" />
+                <DataGridTextColumn Header="Email" Binding="{Binding Email}" SortMemberPath="Email" />
+                <DataGridTextColumn Header="Дата народження" Binding="{Binding BirthDate, StringFormat=d}" SortMemberPath="BirthDate" />
+                <DataGridTextColumn Header="Вік" Binding="{Binding Age}" SortMemberPath="Age" />
+                <DataGridTextColumn Header="Знак зодіаку" Binding="{Binding WesternSign}" SortMemberPath="WesternSign" />
+                <DataGridTextColumn Header="Китайський знак" Binding="{Binding ChineseSign}" SortMemberPath="ChineseSign" />
+                <DataGridCheckBoxColumn Header="Дорослий" Binding="{Binding IsAdult, Mode=OneWay}" SortMemberPath="IsAdult" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Додати" Width="80" Command="{Binding AddCommand}" />
+            <Button Content="Редагувати" Width="80" Margin="5,0,0,0" Command="{Binding EditCommand}" CommandParameter="{Binding SelectedItem, ElementName=UsersGrid}" />
+            <Button Content="Видалити" Width="80" Margin="5,0,0,0" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem, ElementName=UsersGrid}" />
+        </StackPanel>
+    </Grid>
+</Window>
+>>>>>>> Stashed changes
